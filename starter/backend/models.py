@@ -1,11 +1,10 @@
 import os
 from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import json
 
-database_name = "trivia"
-database_path = "postgres://{}/{}".format('localhost:5432', database_name)
-
+database_path = 'postgresql://root:rootpwd@localhost:5432/trivia'
 db = SQLAlchemy()
 
 '''
@@ -18,6 +17,8 @@ def setup_db(app, database_path=database_path):
     db.app = app
     db.init_app(app)
     db.create_all()
+    migrate = Migrate(app, db)
+    return db
 
 '''
 Question
@@ -71,8 +72,4 @@ class Category(db.Model):
   def __init__(self, type):
     self.type = type
 
-  def format(self):
-    return {
-      'id': self.id,
-      'type': self.type
-    }
+
