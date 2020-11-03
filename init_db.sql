@@ -1,2 +1,0 @@
-CREATE DATABASE  trivia;
-CREATE DATABASE trivia_test;

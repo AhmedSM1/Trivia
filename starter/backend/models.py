@@ -1,6 +1,7 @@
 import os
 from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_serializer import SerializerMixin
 from flask_migrate import Migrate
 import json
 
@@ -24,7 +25,7 @@ def setup_db(app, database_path=database_path):
 Question
 
 '''
-class Question(db.Model):  
+class Question(db.Model, SerializerMixin):  
   __tablename__ = 'questions'
 
   id = Column(Integer, primary_key=True)
@@ -63,7 +64,7 @@ class Question(db.Model):
 Category
 
 '''
-class Category(db.Model):  
+class Category(db.Model, SerializerMixin):  
   __tablename__ = 'categories'
 
   id = Column(Integer, primary_key=True)
