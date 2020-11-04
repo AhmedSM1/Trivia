@@ -178,16 +178,14 @@ def create_app(test_config=None):
 
   def playQuizService(current_category,previous_questions):
      try:
-       category_id =  int(current_category['id'])
+       if current_category['type'] == 'click':
 
-       if category_id == 0:
-          questions = Question.query.filter(
-                    Question.id.notin_(previous_questions)).all()
-        
+        questions = Question.query.filter(
+                    Question.id.notin_((previous_questions))).all()
+
        else:
-          questions = Question.query.filter(
-                    Question.category == category_id).filter(
-                    Question.id.notin_(previous_questions)).all()
+        questions = Question.query.filter_by(
+                    category=current_category['id']).filter(Question.id.notin_((previous_questions))).all()
 
 
        if questions:
@@ -204,7 +202,7 @@ def create_app(test_config=None):
             })
      except Exception as e:
         print(e)
-        abort(500)
+        # abort(500)
 
 
 
@@ -312,6 +310,9 @@ def create_app(test_config=None):
   @app.route('/questions/search', methods=['POST'])
   def searchQuestion():
       request_body =  request.get_json()
+      if not ('searchTerm' in request_body):
+        abort(422)
+
       search_term = request_body.get('searchTerm', None)
       return searchQuestionService(request,search_term), status.HTTP_200_OK
 

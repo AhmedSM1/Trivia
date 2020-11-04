@@ -118,41 +118,54 @@ class TriviaTestCase(unittest.TestCase):
         
         
 
-
-
-
-
-
-
     '''
     Create Question Success 201
     ''' 
     def test_create_question(self):
-        question = Question(question= 'test question',
-            answer= 'test answer', difficulty= 1,
-            category=  1)
+        given_question = Question(question='test question', answer='test answer',
+                            difficulty=1, category=1)
 
         total_questions_before = len(Question.query.all())
-        results = self.client().post('/questions', json=question.to_dict())
+        results = self.client().post('/questions', json=given_question.to_dict())
         data = json.loads(results.data)
         total_questions_after = len(Question.query.all())
         self.assertEqual(results.status_code, 201)
         self.assertEqual(data["success"], True)
         self.assertEqual(total_questions_after, total_questions_before + 1)
 
+    '''
+    Create Question Failed 422
+    ''' 
+    def test_create_question_failed(self):
+        given_question = {'question':'test question', 'answer':'test answer',
+                            'difficulty':1}
+
+        req = self.client().post('/questions', json=given_question)
+        data = json.loads(req.data)
+
+        self.assertEqual(req.status_code, 422)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "unprocessable")
+
+
+
+
 
     '''
     delete Question Success 200
     ''' 
     def test_delete_question(self):
-        given_question_id = 1
-        res = self.client().delete('/questions/'+str(given_question_id))
-        data = json.loads(res.data)
 
-        deleted_question = Question.query.filter(Question.id == given_question_id).one_or_none()
+        given_question = Question(question='test question', answer='test answer',
+                            difficulty=1, category=1)
+        given_question.insert()
+        question_id = given_question.id
+        res = self.client().delete('/questions/'+str(question_id))
+        data = json.loads(res.data)
+        deleted_question = Question.query.filter(Question.id == question_id).one_or_none()
         self.assertEqual(res.status_code, 200) 
         self.assertEqual(data['success'], True)
-        self.assertEqual(data['deleted'], int(given_question_id))
+        self.assertEqual(data['deleted'], str(question_id))
         self.assertEqual(deleted_question, None)
 
 
@@ -169,8 +182,7 @@ class TriviaTestCase(unittest.TestCase):
     Search Question Success 200
     '''  
     def test_search_questions(self):
-        # given_search_term = 'Who discovered penicillin'
-        given_search_term = 'test question'
+        given_search_term = 'test'
         searchQuesitonRequest = {
             'searchTerm': given_search_term
         }
@@ -179,7 +191,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(req.status_code,200)
         self.assertEqual(data['success'], True)
         self.assertIsNotNone(data['questions'])
-        self.assertEqual(data['total_questions'], 1)
+        self.assertIsNotNone(data['total_questions'])
  
     '''
     Search Question not found 404
@@ -196,7 +208,29 @@ class TriviaTestCase(unittest.TestCase):
          self.assertEqual(data['message'], 'Not found')
 
 
-        
+    '''
+    Play Quiz Success 200 
+    '''
+    def test_play_quiz(self):
+        results = self.client().post('/quizzes', json={"previous_questions": [], "quiz_category": {"type": "click", "id": "0"}})
+        data = json.loads(results.data)
+
+        self.assertEqual(results.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['previous_questions'], [])
+        self.assertIsNotNone(data['question'])
+
+    '''
+    Play Quiz Failed 422 missing  quiz_category
+    '''
+    def test_422_play_quiz(self):
+        res = self.client().post('/quizzes', json={"previous_questions": []})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "unprocessable")
+
 
 
 
