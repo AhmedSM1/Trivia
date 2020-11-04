@@ -66,7 +66,13 @@ def create_app(test_config=None):
         })
     
          
-        
+
+  def find_category(id):
+    category = Category.query.get(id)
+    if not category:
+      abort(404)
+    else:
+      return category
 
   def getCatagoriesService():
    categories =   Category.query.all()
@@ -139,6 +145,7 @@ def create_app(test_config=None):
 
   def getQuestionsBasedOnCategoriesService(category_id):
       try:
+          category = find_category(category_id)
           questions = Question.query.filter(
                 Question.category == str(category_id)).all()
           return jsonify({
@@ -171,16 +178,26 @@ def create_app(test_config=None):
 
   def playQuizService(current_category,previous_questions):
      try:
-        questions = Question.query.filter(
-                    Question.category == int(current_category['id'])).filter(
-                    Question.id.notin_(previous_questions)).all()
-        if questions:
-          question = random.choice(questions)
-          question_formatted = question.format()
-        else:
-          question_formatted = False
+       category_id =  int(current_category['id'])
 
-        return jsonify({
+       if category_id == 0:
+          questions = Question.query.filter(
+                    Question.id.notin_(previous_questions)).all()
+        
+       else:
+          questions = Question.query.filter(
+                    Question.category == category_id).filter(
+                    Question.id.notin_(previous_questions)).all()
+
+
+       if questions:
+                question = random.choice(questions)
+                question_formatted = question.format()
+       else:
+                question_formatted = False
+
+
+       return jsonify({
         'success': True,
         'previous_questions': previous_questions,
         'question': question_formatted
@@ -321,38 +338,6 @@ def create_app(test_config=None):
         return playQuizService(current_category,previous_questions), status.HTTP_200_OK
 
 
-        # if quiz_category is None:
-        #     abort(404)
-
-        # # quiz_category -> ex. {'type': 'Science', 'id': '1'} get the id
-        # category_id = int(quiz_category['id'])
-
-        # try:
-        #     # if id=0 all categories
-        #     if category_id == 0:
-        #         questions = Question.query.filter(
-        #             Question.id.notin_(previous_questions)).all()
-        #     else:
-        #         questions = Question.query.filter(
-        #             Question.category == category_id).filter(
-        #             Question.id.notin_(previous_questions)).all()
-
-        #     # get a random question from the available questions
-        #     if questions:
-        #         question = random.choice(questions)
-        #         question_formatted = question.format()
-        #     else:
-        #         question_formatted = False
-
-        #     return jsonify({
-        #         'success': True,
-        #         'previous_questions': previous_questions,
-        #         'question': question_formatted
-        #     }), 200
-        # except BaseException:
-        #     abort(500)
-
-
 
 
 
@@ -380,6 +365,14 @@ def create_app(test_config=None):
   @app.errorhandler(500)
   def server_error(error):
     return 'System error', 500
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }), 422
 
   return app
 

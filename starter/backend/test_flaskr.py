@@ -78,17 +78,45 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
         self.assertTrue(data['questions'])
        
-
-    def test_404_get_all_questions_beyond_valid_page(self):
+    '''
+    Get Questions Page Not found 404
+    ''' 
+    def test_404_get_all_questions(self):
         given_page = 1000000
-        res = self.client().get('/questions?page='+str(given_page))
-        data = json.loads(res.data)
-        self.assertEqual(res.status_code, 404)
+        req = self.client().get('/questions?page='+str(given_page))
+        data = json.loads(req.data)
+        self.assertEqual(req.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Not found')
 
 
 
+    '''
+    Get All Questions from Catagory 200
+    ''' 
+    def test_get_all_question_from_catagory(self):
+        given_catagory_id = 1
+        req = self.client().get('/categories/'+str(given_catagory_id)+'/questions')
+        data = json.loads(req.data)
+        self.assertEqual(req.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+
+
+
+
+    '''
+    Get All Questions from Catagory that doesnt exist 404
+    ''' 
+    def test_get_all_question_from_catagory_doesnt_exist(self):
+        given_catagory_id = 99990
+        req = self.client().get('/categories/'+str(given_catagory_id)+'/questions')
+        data = json.loads(req.data)
+        self.assertEqual(req.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Not found')
+        
+        
 
 
 
@@ -117,7 +145,7 @@ class TriviaTestCase(unittest.TestCase):
     delete Question Success 200
     ''' 
     def test_delete_question(self):
-        given_question_id = 9
+        given_question_id = 1
         res = self.client().delete('/questions/'+str(given_question_id))
         data = json.loads(res.data)
 
@@ -129,13 +157,45 @@ class TriviaTestCase(unittest.TestCase):
 
 
     '''
-    delete Question Success 404
+    delete Question thats doesnt exist Error 422
     ''' 
     def test_delete_not_found_question(self):
         given_question_id = 100000
-        results = self.client().delete('/questions/'+str(given_question_id))
-        deleted_question = Question.query.filter(Question.id == given_question_id).one_or_none()
-        self.assertEqual(results.status_code, 404) 
+        req = self.client().delete('/questions/'+str(given_question_id))
+        self.assertEqual(req.status_code, 422) 
+
+
+    '''
+    Search Question Success 200
+    '''  
+    def test_search_questions(self):
+        # given_search_term = 'Who discovered penicillin'
+        given_search_term = 'test question'
+        searchQuesitonRequest = {
+            'searchTerm': given_search_term
+        }
+        req = self.client().post('/questions/search', json=searchQuesitonRequest)
+        data = json.loads(req.data)
+        self.assertEqual(req.status_code,200)
+        self.assertEqual(data['success'], True)
+        self.assertIsNotNone(data['questions'])
+        self.assertEqual(data['total_questions'], 1)
+ 
+    '''
+    Search Question not found 404
+    '''  
+    def test_search_questions_dont_exist(self):
+         given_search_term = 'Random question that doesnt exist in the database 100%'
+         searchQuesitonRequest = {
+            'searchTerm': given_search_term
+         }
+         req = self.client().post('/questions/search', json=searchQuesitonRequest)
+         data = json.loads(req.data)
+         self.assertEqual(req.status_code,404)
+         self.assertEqual(data['success'], False)
+         self.assertEqual(data['message'], 'Not found')
+
+
         
 
 
