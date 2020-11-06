@@ -97,7 +97,8 @@ def create_app(test_config=None):
        db.session.commit()
        return jsonify({
            'success': True,
-           'categories_type': category.type,
+           'id': category.id,
+           'type': category.type
        })
     except Exception as e:
         print("Exception occured:  "+ e)
