@@ -54,8 +54,30 @@ Setting the `FLASK_APP` variable to `flaskr` directs flask to use the `flaskr` d
 
 ## ENDPOINT
 
+## POST   /categories
 
 
+Creates a category
+
+```
+Request body:
+
+{
+    "type": "sports"
+}
+
+
+```
+
+```
+Response: 
+
+{
+    "id": 7,
+    "success": true,
+    "type": "dsfdfd"
+}
+```
 ## POST     /questions
 
 
@@ -80,6 +102,7 @@ Response:
     "success": true
 }
 ```
+
 
 ## DELETE   /questions/<question_id>
 
