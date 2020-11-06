@@ -9,8 +9,7 @@ services:
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: rootpwd
-    volumes:
-         - .starter/backend/trivia.psql:/docker-entrypoint-initdb.d/initdb.psql
+
 
   
   adminer:
